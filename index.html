@@ -1,0 +1,119 @@
+<!-- Langton's ant create by Antoine Subit -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Antoine Subit">
+  <title>Langton's Ant in JS</title>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<body>
+
+<style type="text/css">
+	table tr td {width: 15px;height: 15px;}
+	.white {background: white;}
+	.black {background: black;}
+	#ant {float:left;z-index:999;}
+}
+</style>
+
+<img id="ant" src="ant.png" width="12px" height="12px" />
+
+<table id="grid" border="1"></table>
+
+<script>
+	/* Langton's ant */
+	$( function() {
+		// Global vars
+		var grid = $('#grid');
+		var ant = $('#ant');
+		var angle = 0;
+		var nbMove = 0;
+		var nbMoveStop = prompt("Ant's move iteration number : ");
+		var delay = prompt("Speed per iteration (millisecond) : ");
+		var gridX = prompt("Grid size X : ");
+		var gridY = prompt("Grid size Y : ");
+		// Construct grid
+		constructGrid(gridX,gridY);
+		// Place ant
+		var x = Math.round(gridX/2);
+		var y = Math.round(gridY/2);
+		placeAnt(x,y);
+		// Start "The Langton Ant"
+		while(nbMove < nbMoveStop) {
+			(function (x) {
+				nbMove++;
+				setTimeout(function() {
+					moveAnt();
+				}, nbMove * delay);
+			})(nbMove);
+		}
+
+		function moveAnt() {
+			var color = getAntBoxColor();
+			var go = getAntDirection(color);
+			if (color == 'white') {
+				setAntBoxColor('black');
+				angle += 90;
+				if (angle == 360) {angle = 0;}
+				ant.css('transform','rotate(' + angle + 'deg)');
+			}
+			if (color == 'black') {
+				setAntBoxColor('white');
+				angle -= 90;
+				if (angle == -360) {angle = 0;}
+				ant.css('transform','rotate(' + angle + 'deg)');
+			}
+			if (go == 'L') {x-=1;}
+			if (go == 'R') {x+=1;}
+			if (go == 'D') {y+=1;}
+			if (go == 'U') {y-=1;}
+			placeAnt(x,y);
+		}
+		function getAntDirection(color) {
+			var direction = '';
+			if (color == 'white') {
+				if (angle==0) {direction = 'R';}// rigth
+				else if (angle==90 || angle==-270) {direction = 'D';}// down
+				else if (angle==180 || angle==-180) {direction = 'L';}// left
+				else if (angle==270 || angle==-90) {direction = 'U';}// up
+			}
+			if (color == 'black') {
+				if (angle==0) {direction = 'L';}
+				else if (angle==270 || angle==-90) {direction = 'D';}
+				else if (angle==180 || angle==-180) {direction = 'R';}
+				else if (angle==90 || angle==-270) {direction = 'U';}
+			}
+			return direction;
+		}
+		function getAntBoxColor() {
+			return ant.parent().attr('class');
+		}
+		function setAntBoxColor(color) {
+			return ant.parent().attr('class', color);
+		}
+		function placeAnt(x,y) {
+			var box = grid.find('tr:eq('+y+') td:eq('+x+')');
+			box.append(ant);
+		}
+
+		function constructGrid(nbRow, nbCol) {
+			var line = 0;
+			while (line < nbRow) {
+				line++;
+				var lineId = 'line'+line;
+				grid.append('<tr id="'+lineId+'"></tr>');
+				cell = 0;
+				while (cell < nbCol) {
+					cell++;
+					var cellId = lineId+'-cell'+cell;
+					$('tr#'+lineId).append('<td id="'+cellId+'" class="white"></td>');
+				}
+			}
+		}
+	} );
+</script>
+</body>
+</html>
